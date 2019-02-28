@@ -16,37 +16,85 @@
 
 package uk.gov.hmrc.bankholidays.controllers
 
-import org.scalatest.{Matchers, WordSpec}
+import akka.stream.Materializer
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.BDDMockito.given
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
-import play.api.i18n.{DefaultLangs, DefaultMessagesApi}
+import play.api.libs.ws.WSClient
+import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.bankholidays.config.AppConfig
+import uk.gov.hmrc.bankholidays.config.{AppConfig, ProxyConfiguration}
+import uk.gov.hmrc.play.test.UnitSpec
 
 
-class IndexControllerControllerSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
-  val fakeRequest = FakeRequest("GET", "/")
+class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite with BeforeAndAfterEach {
 
-  val env = Environment.simple()
-  val configuration = Configuration.load(env)
+  private val wirePort = 20001
+  private val wireHost = "localhost"
+  private val host: String = s"http://$wireHost:$wirePort"
+  private val wireMockServer = new WireMockServer(wirePort)
 
-  val messageApi = new DefaultMessagesApi(env, configuration, new DefaultLangs(configuration))
-  val appConfig = new AppConfig(configuration, env)
+  private val fakeRequest = FakeRequest("GET", "/")
+  private val wsClient: WSClient = fakeApplication.injector.instanceOf[WSClient]
+  private val appConfig = mock[AppConfig]
+  private implicit val mat: Materializer = app.materializer
+  private def controller = new IndexController(wsClient, appConfig)
 
-  val controller = new IndexController(messageApi, appConfig)
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    wireMockServer.start()
+    configureFor(wireHost, wirePort)
+  }
+
+  override protected def afterEach(): Unit = {
+    super.afterEach()
+    wireMockServer.resetAll()
+    wireMockServer.stop()
+  }
 
   "GET /" should {
-    "return 200" in {
-      val result = controller.get(fakeRequest)
+
+    "return 200 without proxy" in {
+      given(appConfig.bankHolidaysUrl) willReturn host + "/bank-holidays.json"
+      given(appConfig.proxy) willReturn None
+
+      stubFor(
+        get("/bank-holidays.json")
+          .willReturn(
+            aResponse()
+              .withStatus(Status.OK)
+              .withBody("{}")
+          )
+      )
+
+      val result: Result = await(controller.get(fakeRequest))
       status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("application/json")
+      bodyOf(result) shouldBe "{}"
     }
 
-    "return HTML" in {
-      val result = controller.get(fakeRequest)
-      contentType(result) shouldBe Some("text/html")
-      charset(result) shouldBe Some("utf-8")
+    "return 200 with proxy" in {
+      given(appConfig.bankHolidaysUrl) willReturn host + "/bank-holidays.json"
+      given(appConfig.proxy) willReturn Some(ProxyConfiguration("user", "password", "http", wireHost, wirePort))
+
+      stubFor(
+        get("/bank-holidays.json")
+          .willReturn(
+            aResponse()
+              .withStatus(Status.OK)
+              .withBody("[]")
+          )
+      )
+
+      val result: Result = await(controller.get(fakeRequest))
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("application/json")
+      bodyOf(result) shouldBe "[]"
     }
 
   }

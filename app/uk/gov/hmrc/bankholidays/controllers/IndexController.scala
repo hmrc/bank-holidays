@@ -17,20 +17,46 @@
 package uk.gov.hmrc.bankholidays.controllers
 
 import javax.inject.{Inject, Singleton}
-
+import play.api.libs.ws.{WSClient, WSProxyServer, WSResponse}
 import play.api.mvc._
-
-import scala.concurrent.Future
-import play.api.i18n.{I18nSupport, MessagesApi}
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.bankholidays.config.AppConfig
-import uk.gov.hmrc.bankholidays.views
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 @Singleton
-class IndexController @Inject()(val messagesApi: MessagesApi, implicit val appConfig: AppConfig) extends FrontendController with I18nSupport {
+class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends FrontendController {
 
-  def get = Action.async { implicit request =>
-    Future.successful(Ok(views.html.index()))
+  private val proxyServer: Option[WSProxyServer] = appConfig.proxy.map { proxy =>
+    new WSProxyServer {
+      override def host: String = proxy.host
+
+      override def port: Int = proxy.port
+
+      override def protocol: Option[String] = Some(proxy.protocol)
+
+      override def principal: Option[String] = Some(proxy.user)
+
+      override def password: Option[String] = Some(proxy.password)
+
+      override def ntlmDomain: Option[String] = None
+
+      override def encoding: Option[String] = Some("UTF-8")
+
+      override def nonProxyHosts: Option[Seq[String]] = None
+    }
+  }
+
+  def get: Action[AnyContent] = Action.async { implicit request =>
+    val url: String = appConfig.bankHolidaysUrl
+
+    val response: Future[WSResponse] = proxyServer match {
+      case Some(proxy) => client.url(url).withProxyServer(proxy).get()
+      case None => client.url(url).get()
+    }
+
+    response.map(r => Ok(r.body).as("application/json"))
   }
 
 }
