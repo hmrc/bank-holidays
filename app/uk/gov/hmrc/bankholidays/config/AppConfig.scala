@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.bankholidays.config
 
+import java.util.Base64
+
 import javax.inject.{Inject, Singleton}
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
@@ -34,7 +36,7 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
   lazy val proxy: Option[ProxyConfiguration] = if (getBoolean("proxy.proxyRequiredForThisEnvironment")) {
     Some(ProxyConfiguration(
       getString("proxy.username"),
-      getString("proxy.password"),
+      new String(Base64.getDecoder.decode(getString("proxy.password"))),
       getString("proxy.protocol"),
       getString("proxy.host"),
       getInt("proxy.port")

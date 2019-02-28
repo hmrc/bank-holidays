@@ -56,7 +56,7 @@ class AppConfigTest extends UnitSpec with GuiceOneAppPerSuite {
       "proxy.port" -> "123",
       "proxy.protocol" -> "protocol",
       "proxy.username" -> "username",
-      "proxy.password" -> "password"
+      "proxy.password" -> "cGFzc3dvcmQ="
     ).proxy shouldBe Some(ProxyConfiguration("username", "password", "protocol", "host", 123))
   }
 
