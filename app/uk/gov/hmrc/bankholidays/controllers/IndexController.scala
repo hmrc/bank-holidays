@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@import uk.gov.hmrc.bankholidays.config.AppConfig
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+package uk.gov.hmrc.bankholidays.controllers
 
-@contentHeader = {
-  <h1>@heading</h1>
+import javax.inject.{Inject, Singleton}
+
+import play.api.mvc._
+
+import scala.concurrent.Future
+import play.api.i18n.{I18nSupport, MessagesApi}
+import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.bankholidays.config.AppConfig
+import uk.gov.hmrc.bankholidays.views
+
+@Singleton
+class IndexController @Inject()(val messagesApi: MessagesApi, implicit val appConfig: AppConfig) extends FrontendController with I18nSupport {
+
+  def get = Action.async { implicit request =>
+    Future.successful(Ok(views.html.index()))
+  }
+
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

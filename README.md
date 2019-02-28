@@ -1,7 +1,16 @@
+# Bank Holidays
 
-# bank-holidays
+This is an MDTP proxy to www.gov.uk/bank-holidays.json
 
-This is a placeholder README.md for a new repository
+## API
+
+##### Running locally:
+
+`GET http://localhost:8587/bank-holidays`
+
+##### In MDTP Environments:
+
+`GET /bank-holidays`
 
 ### License
 
