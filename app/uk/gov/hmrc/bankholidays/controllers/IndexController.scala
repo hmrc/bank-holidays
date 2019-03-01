@@ -17,6 +17,7 @@
 package uk.gov.hmrc.bankholidays.controllers
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.libs.ws.{WSClient, WSProxyServer, WSResponse}
 import play.api.mvc._
 import uk.gov.hmrc.bankholidays.config.AppConfig
@@ -48,8 +49,10 @@ class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends 
     }
   }
 
+  private val url: String = appConfig.bankHolidaysUrl
+  Logger.info(s"Proxying $url")
+
   def get: Action[AnyContent] = Action.async { implicit request =>
-    val url: String = appConfig.bankHolidaysUrl
 
     val response: Future[WSResponse] = proxyServer match {
       case Some(proxy) => client.url(url).withProxyServer(proxy).get()
