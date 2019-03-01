@@ -18,6 +18,7 @@ package uk.gov.hmrc.bankholidays.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.libs.json.Json
 import play.api.libs.ws.{WSClient, WSProxyServer, WSResponse}
 import play.api.mvc._
 import uk.gov.hmrc.bankholidays.config.AppConfig
@@ -25,6 +26,7 @@ import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Try
 
 @Singleton
 class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends FrontendController {
@@ -59,7 +61,11 @@ class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends 
       case None => client.url(url).get()
     }
 
-    response.map(r => Ok(r.body).as("application/json"))
+    response.map(_.body).map { body =>
+      Try(Json.parse(body))
+        .map(Ok(_))
+        .getOrElse(Ok(body).as("text/html"))
+    }
   }
 
 }

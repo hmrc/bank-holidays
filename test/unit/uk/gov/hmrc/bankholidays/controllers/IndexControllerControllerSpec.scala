@@ -78,6 +78,25 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with Guic
       bodyOf(result) shouldBe "{}"
     }
 
+    "return 200 with non-json without proxy" in {
+      given(appConfig.bankHolidaysUrl) willReturn host + "/bank-holidays.json"
+      given(appConfig.proxy) willReturn None
+
+      stubFor(
+        get("/bank-holidays.json")
+          .willReturn(
+            aResponse()
+              .withStatus(Status.OK)
+              .withBody("xyz")
+          )
+      )
+
+      val result: Result = await(controller.get(fakeRequest))
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      bodyOf(result) shouldBe "xyz"
+    }
+
     "return 200 with proxy" in {
       given(appConfig.bankHolidaysUrl) willReturn host + "/bank-holidays.json"
       given(appConfig.proxy) willReturn Some(ProxyConfiguration("user", "password", "http", wireHost, wirePort))
@@ -95,6 +114,25 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with Guic
       status(result) shouldBe Status.OK
       contentType(result) shouldBe Some("application/json")
       bodyOf(result) shouldBe "[]"
+    }
+
+    "return 200 with non-json with proxy" in {
+      given(appConfig.bankHolidaysUrl) willReturn host + "/bank-holidays.json"
+      given(appConfig.proxy) willReturn Some(ProxyConfiguration("user", "password", "http", wireHost, wirePort))
+
+      stubFor(
+        get("/bank-holidays.json")
+          .willReturn(
+            aResponse()
+              .withStatus(Status.OK)
+              .withBody("abc")
+          )
+      )
+
+      val result: Result = await(controller.get(fakeRequest))
+      status(result) shouldBe Status.OK
+      contentType(result) shouldBe Some("text/html")
+      bodyOf(result) shouldBe "abc"
     }
 
   }
