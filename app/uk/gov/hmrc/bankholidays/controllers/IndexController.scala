@@ -57,8 +57,12 @@ class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends 
   def get: Action[AnyContent] = Action.async { implicit request =>
 
     val response: Future[WSResponse] = proxyServer match {
-      case Some(proxy) => client.url(url).withProxyServer(proxy).get()
-      case None => client.url(url).get()
+      case Some(proxy) =>
+        Logger.info(s"Using Proxy [protocol:${proxy.protocol.get},port:${proxy.port},host:${proxy.host},user:${proxy.principal.get},password:${proxy.password.map(_.substring(0, 2)).get}]")
+        client.url(url).withProxyServer(proxy).get()
+      case None =>
+        Logger.info("Using no Proxy")
+        client.url(url).get()
     }
 
     response.map(_.body).map { body =>
