@@ -19,53 +19,22 @@ package uk.gov.hmrc.bankholidays.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.libs.ws.{WSClient, WSProxyServer, WSResponse}
 import play.api.mvc._
 import uk.gov.hmrc.bankholidays.config.AppConfig
+import uk.gov.hmrc.bankholidays.connector.WSProxyGet
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.Try
 
 @Singleton
-class IndexController @Inject()(client: WSClient, appConfig: AppConfig) extends FrontendController {
-
-  private val proxyServer: Option[WSProxyServer] = appConfig.proxy.map { proxy =>
-    new WSProxyServer {
-      override def host: String = proxy.host
-
-      override def port: Int = proxy.port
-
-      override def protocol: Option[String] = Some(proxy.protocol)
-
-      override def principal: Option[String] = Some(proxy.user)
-
-      override def password: Option[String] = Some(proxy.password)
-
-      override def ntlmDomain: Option[String] = None
-
-      override def encoding: Option[String] = Some("UTF-8")
-
-      override def nonProxyHosts: Option[Seq[String]] = None
-    }
-  }
+class IndexController @Inject()(client: WSProxyGet, appConfig: AppConfig) extends FrontendController {
 
   private val url: String = appConfig.bankHolidaysUrl
   Logger.info(s"Proxying $url")
 
   def get: Action[AnyContent] = Action.async { implicit request =>
-
-    val response: Future[WSResponse] = proxyServer match {
-      case Some(proxy) =>
-        Logger.info(s"Using Proxy [protocol:${proxy.protocol.get},port:${proxy.port},host:${proxy.host},user:${proxy.principal.get},password:${proxy.password.map(_.substring(0, 2)).get}]")
-        client.url(url).withProxyServer(proxy).get()
-      case None =>
-        Logger.info("Using no Proxy")
-        client.url(url).get()
-    }
-
-    response.map(_.body).map { body =>
+    client.GET(url).map(_.body).map { body =>
       Try(Json.parse(body))
         .map(Ok(_))
         .getOrElse(Ok(body).as("text/html"))

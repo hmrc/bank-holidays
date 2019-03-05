@@ -24,11 +24,11 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
-import play.api.libs.ws.WSClient
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.bankholidays.config.{AppConfig, ProxyConfiguration}
+import uk.gov.hmrc.bankholidays.connector.WSProxyGet
 import uk.gov.hmrc.play.test.UnitSpec
 
 
@@ -40,7 +40,7 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with Guic
   private val wireMockServer = new WireMockServer(wirePort)
 
   private val fakeRequest = FakeRequest("GET", "/")
-  private val wsClient: WSClient = fakeApplication.injector.instanceOf[WSClient]
+  private val wsClient: WSProxyGet = fakeApplication.injector.instanceOf[WSProxyGet]
   private val appConfig = mock[AppConfig]
   private implicit val mat: Materializer = app.materializer
   private def controller = new IndexController(wsClient, appConfig)
