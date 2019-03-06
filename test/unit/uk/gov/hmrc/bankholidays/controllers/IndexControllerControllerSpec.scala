@@ -22,7 +22,6 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.BDDMockito.given
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
