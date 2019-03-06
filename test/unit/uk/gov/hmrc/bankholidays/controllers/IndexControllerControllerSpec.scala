@@ -29,10 +29,10 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.bankholidays.config.{AppConfig, ProxyConfiguration}
 import uk.gov.hmrc.bankholidays.connector.WSProxyGet
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
-class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite with BeforeAndAfterEach {
+class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfterEach {
 
   private val wirePort = 20001
   private val wireHost = "localhost"
@@ -42,7 +42,7 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with Guic
   private val fakeRequest = FakeRequest("GET", "/")
   private val wsClient: WSProxyGet = fakeApplication.injector.instanceOf[WSProxyGet]
   private val appConfig = mock[AppConfig]
-  private implicit val mat: Materializer = app.materializer
+  private implicit val mat: Materializer = fakeApplication.materializer
   private def controller = new IndexController(wsClient, appConfig)
 
   override protected def beforeEach(): Unit = {
