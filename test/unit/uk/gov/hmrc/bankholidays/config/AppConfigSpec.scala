@@ -16,13 +16,17 @@
 
 package uk.gov.hmrc.bankholidays.config
 
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.bankholidays.BaseTestSpec
 
-class AppConfigTest extends UnitSpec with WithFakeApplication {
+class AppConfigSpec extends BaseTestSpec {
+
+  private val env: Environment = app.injector.instanceOf[Environment]
 
   private def appConfig(pairs: (String, String)*): AppConfig = {
-    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), Environment.simple())
+    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), env)
   }
 
   "Build assets prefix" in {
@@ -57,6 +61,26 @@ class AppConfigTest extends UnitSpec with WithFakeApplication {
       "proxy.username" -> "username",
       "proxy.password" -> "cGFzc3dvcmQ="
     ).proxy shouldBe Some(ProxyConfiguration("username", "password", "protocol", "host", 123))
+  }
+
+  "mode is correct" in {
+    appConfig(
+      "proxy.proxyRequiredForThisEnvironment" -> "true",
+      "proxy.host" -> "host",
+      "proxy.port" -> "123",
+      "proxy.protocol" -> "protocol",
+      "proxy.username" -> "username",
+      "proxy.password" -> "cGFzc3dvcmQ="
+    ).mode shouldBe env.mode
+  }
+
+  "missing key in config" in {
+    val config = mock[Configuration]
+    val appConfig = new AppConfig(config, env)
+
+    when(config.getString(any(), any())).thenReturn(None)
+
+    assertThrows[Exception](appConfig.loadConfig("random.invalid.key.test"))
   }
 
 }
