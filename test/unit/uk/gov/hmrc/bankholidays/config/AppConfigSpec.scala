@@ -16,17 +16,13 @@
 
 package uk.gov.hmrc.bankholidays.config
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
-import play.api.{Configuration, Environment}
+import play.api.Configuration
 import uk.gov.hmrc.bankholidays.BaseTestSpec
 
 class AppConfigSpec extends BaseTestSpec {
 
-  private val env: Environment = app.injector.instanceOf[Environment]
-
   private def appConfig(pairs: (String, String)*): AppConfig = {
-    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap), env)
+    new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap))
   }
 
   "Build assets prefix" in {
@@ -63,24 +59,45 @@ class AppConfigSpec extends BaseTestSpec {
     ).proxy shouldBe Some(ProxyConfiguration("username", "password", "protocol", "host", 123))
   }
 
-  "mode is correct" in {
+  "getInt should return valid value" in {
+    appConfig(
+      "proxy.port" -> "123"
+    ).getInt("proxy.port") shouldBe 123
+  }
+
+  "getInt for not existing key should return exception" in {
+    assertThrows[Exception](
+      appConfig(
+        "proxy.port" -> "123"
+      ).getInt("random.invalid.key.test")
+    )
+  }
+
+  "getString should return valid value" in {
+    appConfig(
+      "proxy.port" -> "123"
+    ).getString("proxy.port") shouldBe 123.toString
+  }
+
+  "getString for not existing key should return exception" in {
+    assertThrows[Exception](
+      appConfig(
+        "proxy.port" -> "123"
+      ).getString("random.invalid.key.test")
+    )
+  }
+
+  "getBoolean should return valid value" in {
     appConfig(
       "proxy.proxyRequiredForThisEnvironment" -> "true",
-      "proxy.host" -> "host",
-      "proxy.port" -> "123",
-      "proxy.protocol" -> "protocol",
-      "proxy.username" -> "username",
-      "proxy.password" -> "cGFzc3dvcmQ="
-    ).mode shouldBe env.mode
+    ).getBoolean("proxy.proxyRequiredForThisEnvironment") shouldBe true
   }
 
-  "missing key in config" in {
-    val config = mock[Configuration]
-    val appConfig = new AppConfig(config, env)
-
-    when(config.getString(any(), any())).thenReturn(None)
-
-    assertThrows[Exception](appConfig.loadConfig("random.invalid.key.test"))
+  "getBoolean for not existing key should return exception" in {
+    assertThrows[Exception](
+      appConfig(
+        "proxy.proxyRequiredForThisEnvironment" -> "true",
+      ).getBoolean("random.invalid.key.test")
+    )
   }
-
 }

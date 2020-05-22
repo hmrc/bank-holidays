@@ -28,17 +28,25 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
 @Singleton
-class IndexController @Inject()(client: WSProxyGet, appConfig: AppConfig) extends FrontendController {
+class IndexController @Inject()(
+                                 client: WSProxyGet,
+                                 appConfig: AppConfig,
+                                 cc: MessagesControllerComponents
+                               ) extends FrontendController(cc) {
 
-  private val url: String = appConfig.bankHolidaysUrl
-  Logger.info(s"Proxying $url")
+  private lazy val url: String = {
+    val url = appConfig.bankHolidaysUrl
+    Logger.info(s"Proxying $url")
+    url
+  }
 
-  def get: Action[AnyContent] = Action.async { implicit request =>
-    client.GET(url).map(_.body).map { body =>
-      Try(Json.parse(body))
-        .map(Ok(_))
-        .getOrElse(Ok(body).as("text/html"))
-    }
+  def get: Action[AnyContent] = Action.async {
+    implicit request =>
+      client.GET(url).map(_.body).map { body =>
+        Try(Json.parse(body))
+          .map(Ok(_))
+          .getOrElse(Ok(body).as("text/html"))
+      }
   }
 
 }

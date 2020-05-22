@@ -19,20 +19,15 @@ package uk.gov.hmrc.bankholidays.config
 import java.util.Base64
 
 import javax.inject.{Inject, Singleton}
-import play.api.Mode.Mode
-import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.Configuration
 
 @Singleton
-class AppConfig @Inject()(
-                           val runModeConfiguration: Configuration,
-                           environment: Environment
-                         ) extends ServicesConfig {
+class AppConfig @Inject()(val runModeConfiguration: Configuration) {
 
-  lazy val assetsPrefix: String = loadConfig(s"assets.url") + loadConfig(s"assets.version")
-  lazy val analyticsToken: String = loadConfig(s"google-analytics.token")
-  lazy val analyticsHost: String = loadConfig(s"google-analytics.host")
-  lazy val bankHolidaysUrl: String = loadConfig("bank-holidays-url")
+  lazy val assetsPrefix: String = getString(s"assets.url") + getString(s"assets.version")
+  lazy val analyticsToken: String = getString(s"google-analytics.token")
+  lazy val analyticsHost: String = getString(s"google-analytics.host")
+  lazy val bankHolidaysUrl: String = getString("bank-holidays-url")
   lazy val proxy: Option[ProxyConfiguration] = if (getBoolean("proxy.proxyRequiredForThisEnvironment")) {
     Some(ProxyConfiguration(
       getString("proxy.username"),
@@ -43,9 +38,11 @@ class AppConfig @Inject()(
     ))
   } else None
 
-  override def mode: Mode = environment.mode
+  def getInt(key: String): Int = runModeConfiguration.getOptional[Int](key).getOrElse(configNotFoundError(key))
 
-  def loadConfig(key: String): String =
-    runModeConfiguration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+  def getString(key: String): String = runModeConfiguration.getOptional[String](key).getOrElse(configNotFoundError(key))
 
+  def getBoolean(key: String): Boolean = runModeConfiguration.getOptional[Boolean](key).getOrElse(configNotFoundError(key))
+
+  private def configNotFoundError(key: String) = throw new RuntimeException(s"Could not find config key '$key'")
 }
