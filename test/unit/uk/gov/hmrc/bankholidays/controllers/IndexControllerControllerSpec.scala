@@ -20,10 +20,10 @@ import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.BDDMockito.given
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
-import play.api.mvc.Result
+import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.bankholidays.config.{AppConfig, ProxyConfiguration}
@@ -31,7 +31,8 @@ import uk.gov.hmrc.bankholidays.connector.WSProxyGet
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
-class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication with BeforeAndAfterEach {
+class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication
+  with BeforeAndAfterEach with BeforeAndAfterAll {
 
   private val wirePort = 20001
   private val wireHost = "localhost"
@@ -41,20 +42,31 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
   private val fakeRequest = FakeRequest("GET", "/")
   private val wsClient: WSProxyGet = fakeApplication.injector.instanceOf[WSProxyGet]
   private val appConfig = mock[AppConfig]
-  private implicit val mat: Materializer = fakeApplication.materializer
-  private def controller = new IndexController(wsClient, appConfig)
+  private implicit val mat: Materializer = fakeApplication.injector.instanceOf[Materializer]
+  private val cc: MessagesControllerComponents = fakeApplication.injector.instanceOf[MessagesControllerComponents]
 
-  override protected def beforeEach(): Unit = {
-    super.beforeEach()
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+
     wireMockServer.start()
     configureFor(wireHost, wirePort)
   }
 
-  override protected def afterEach(): Unit = {
-    super.afterEach()
-    wireMockServer.resetAll()
+  override def afterAll(): Unit = {
+    super.afterAll()
     wireMockServer.stop()
   }
+
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    wireMockServer.resetAll()
+  }
+
+  override protected def afterEach(): Unit = {
+    super.afterEach()
+  }
+
+  private def controller = new IndexController(wsClient, appConfig, cc)
 
   "GET /" should {
 

@@ -27,13 +27,13 @@ import uk.gov.hmrc.play.http.ws.{WSGet, WSProxyConfiguration}
 
 class WSProxyGet @Inject()(
                             val config: Configuration,
-                            ws: WSClient,
+                            val ws: WSClient,
                             override val actorSystem: ActorSystem
                           ) extends HttpGet with WSGet {
 
   override val hooks: Seq[HttpHook] = NoneRequired
 
-  override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = {
+  override def buildRequest[A](url: String, headers: Seq[(String, String)] = Seq.empty)(implicit hc: HeaderCarrier): WSRequest = {
     wsProxyServer match {
       case Some(proxy) =>
         Logger.info(s"Using Proxy [" +
@@ -43,12 +43,15 @@ class WSProxyGet @Inject()(
           s"user:${proxy.principal.get}," +
           s"password:${proxy.password.map(_.substring(0, 2)).get}" +
           s"]")
-        ws.url(url).withProxyServer(proxy)
-      case None => ws.url(url)
+        wsClient.url(url).withProxyServer(proxy)
+      case None =>
+        wsClient.url(url)
     }
   }
 
-  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy")
+  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy", config)
 
   override protected def configuration: Option[Config] = Some(config.underlying)
+
+  override def wsClient: WSClient = ws
 }
