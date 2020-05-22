@@ -22,7 +22,7 @@ lazy val microservice = (project in file("."))
     libraryDependencies ++= (AppDependencies.compile ++ AppDependencies.test).map(_ withSources()),
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     parallelExecution in Test := false,
-    fork in Test := false,
+    fork in Test := true,
     retrieveManaged := true,
     routesGenerator := InjectedRoutesGenerator
   )
