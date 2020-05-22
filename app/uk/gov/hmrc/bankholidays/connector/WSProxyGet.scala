@@ -25,20 +25,30 @@ import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.http.{HeaderCarrier, HttpGet}
 import uk.gov.hmrc.play.http.ws.{WSGet, WSProxyConfiguration}
 
-class WSProxyGet @Inject()(val config: Configuration,
-                           ws: WSClient,
-                           override val actorSystem: ActorSystem) extends HttpGet with WSGet {
+class WSProxyGet @Inject()(
+                            val config: Configuration,
+                            ws: WSClient,
+                            override val actorSystem: ActorSystem
+                          ) extends HttpGet with WSGet {
 
-  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy")
-  override protected def configuration: Option[Config] = Some(config.underlying)
   override val hooks: Seq[HttpHook] = NoneRequired
 
   override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = {
     wsProxyServer match {
       case Some(proxy) =>
-        Logger.info(s"Using Proxy [protocol:${proxy.protocol.get},port:${proxy.port},host:${proxy.host},user:${proxy.principal.get},password:${proxy.password.map(_.substring(0, 2)).get}]")
+        Logger.info(s"Using Proxy [" +
+          s"protocol:${proxy.protocol.get}," +
+          s"port:${proxy.port}," +
+          s"host:${proxy.host}," +
+          s"user:${proxy.principal.get}," +
+          s"password:${proxy.password.map(_.substring(0, 2)).get}" +
+          s"]")
         ws.url(url).withProxyServer(proxy)
       case None => ws.url(url)
     }
   }
+
+  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy")
+
+  override protected def configuration: Option[Config] = Some(config.underlying)
 }
