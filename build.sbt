@@ -39,6 +39,6 @@ lazy val microservice = (project in file("."))
     resolvers += Resolver.jcenterRepo)
 
 // Coverage configuration
-coverageMinimum := 80
+coverageMinimum := 95
 coverageFailOnMinimum := true
 coverageExcludedPackages := "<empty>;com.kenshoo.play.metrics.*;prod.*;testOnlyDoNotUseInAppConf.*;app.*;.*javascript.*;.*Reverse.*"
