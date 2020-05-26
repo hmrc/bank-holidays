@@ -45,4 +45,5 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration) {
   def getBoolean(key: String): Boolean = runModeConfiguration.getOptional[Boolean](key).getOrElse(configNotFoundError(key))
 
   private def configNotFoundError(key: String) = throw new RuntimeException(s"Could not find config key '$key'")
+
 }
