@@ -45,35 +45,39 @@ class WSProxyGetSpec extends BaseTestSpec {
     new WSProxyGet(config, ws, actor)
   }
 
-  "WSProxyGet" should {
+  "WSProxyGet" when {
 
-    "should not throw any exception while printProxyConfig fully packed" in {
-      controller().printProxyConfig(wsProxyServer())
+    "printProxyConfig" should {
+
+      "should not throw any exception fully packed" in {
+        controller().printProxyConfig(wsProxyServer())
+      }
+
+      "not throw any exception without protocol" in {
+        controller().printProxyConfig(wsProxyServer(protocol = None))
+      }
+
+      "not throw any exception without principal" in {
+        controller().printProxyConfig(wsProxyServer(principal = None))
+      }
+
+      "not throw any exception without password" in {
+        controller().printProxyConfig(wsProxyServer(password = None))
+      }
+
+      "not throw any exception with 0 char password" in {
+        controller().printProxyConfig(wsProxyServer(password = Some("")))
+      }
+
+      "not throw any exception with 2 char password" in {
+        controller().printProxyConfig(wsProxyServer(password = Some("ab")))
+      }
+
+      "not throw any exception with 3 char password" in {
+        controller().printProxyConfig(wsProxyServer(password = Some("abc")))
+      }
+
     }
-
-    "should not throw any exception while printProxyConfig without protocol" in {
-      controller().printProxyConfig(wsProxyServer(protocol = None))
-    }
-
-    "should not throw any exception while printProxyConfig without principal" in {
-      controller().printProxyConfig(wsProxyServer(principal = None))
-    }
-
-    "should not throw any exception while printProxyConfig without password" in {
-      controller().printProxyConfig(wsProxyServer(password = None))
-    }
-
-    "should not throw any exception while printProxyConfig with 0 char password" in {
-      controller().printProxyConfig(wsProxyServer(password = Some("")))
-    }
-
-    "should not throw any exception while printProxyConfig with 2 char password" in {
-      controller().printProxyConfig(wsProxyServer(password = Some("ab")))
-    }
-
-    "should not throw any exception while printProxyConfig with 3 char password" in {
-      controller().printProxyConfig(wsProxyServer(password = Some("abc")))
-    }
-
   }
+
 }
