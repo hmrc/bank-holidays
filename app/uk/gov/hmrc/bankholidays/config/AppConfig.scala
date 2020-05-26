@@ -22,7 +22,9 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 
 @Singleton
-class AppConfig @Inject()(val runModeConfiguration: Configuration) {
+class AppConfig @Inject()(
+                           val runModeConfiguration: Configuration
+                         ) {
 
   lazy val assetsPrefix: String = getString(s"assets.url") + getString(s"assets.version")
   lazy val analyticsToken: String = getString(s"google-analytics.token")
