@@ -16,16 +16,23 @@
 
 package uk.gov.hmrc.bankholidays.views
 
+import play.twirl.api.Html
 import uk.gov.hmrc.bankholidays.BaseTestSpec
 import uk.gov.hmrc.bankholidays.views.html.error_template
 
 class ErrorTemplateSpec extends BaseTestSpec {
 
+  val error_template: error_template = app.injector.instanceOf[error_template]
+
+  def view(pageTitle: String, heading: String, message: String): Html =
+    error_template(pageTitle, heading, message)
+
+
   "should render title in error template" in {
     val title = "custom title"
     val heading = "custom heading"
     val message = "custom message"
-    val actual = error_template(title, heading, message).toString()
+    val actual = view(title, heading, message).toString()
     val expected = "<title>custom title</title>"
 
     actual should include(expected)
@@ -35,7 +42,7 @@ class ErrorTemplateSpec extends BaseTestSpec {
     val title = "custom title"
     val heading = "custom heading"
     val message = "custom message"
-    val actual = error_template(title, heading, message).toString()
+    val actual = view(title, heading, message).toString()
     val expected = "<h1>custom heading</h1>"
 
     actual should include(expected)
@@ -45,7 +52,7 @@ class ErrorTemplateSpec extends BaseTestSpec {
     val title = "custom title"
     val heading = "custom heading"
     val message = "custom message"
-    val actual = error_template(title, heading, message).toString()
+    val actual = view(title, heading, message).toString()
     val expected = "<p>custom message</p>"
 
     actual should include(expected)

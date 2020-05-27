@@ -27,28 +27,44 @@ import uk.gov.hmrc.play.http.ws.{WSGet, WSProxyConfiguration}
 
 class WSProxyGet @Inject()(
                             val config: Configuration,
-                            ws: WSClient,
+                            val ws: WSClient,
                             override val actorSystem: ActorSystem
                           ) extends HttpGet with WSGet {
 
   override val hooks: Seq[HttpHook] = NoneRequired
 
-  override def buildRequest[A](url: String)(implicit hc: HeaderCarrier): WSRequest = {
+  override def buildRequest[A](url: String, headers: Seq[(String, String)] = Seq.empty)(implicit hc: HeaderCarrier): WSRequest = {
     wsProxyServer match {
       case Some(proxy) =>
-        Logger.info(s"Using Proxy [" +
-          s"protocol:${proxy.protocol.get}," +
-          s"port:${proxy.port}," +
-          s"host:${proxy.host}," +
-          s"user:${proxy.principal.get}," +
-          s"password:${proxy.password.map(_.substring(0, 2)).get}" +
-          s"]")
-        ws.url(url).withProxyServer(proxy)
-      case None => ws.url(url)
+        printProxyConfig(proxy)
+        wsClient.url(url).withProxyServer(proxy)
+      case None =>
+        wsClient.url(url)
     }
   }
 
-  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy")
+  def printProxyConfig(proxy: WSProxyServer): Unit = {
+    Logger.info(s"Using Proxy [" +
+      s"protocol:${proxy.protocol.getOrElse("")}," +
+      s"port:${proxy.port}," +
+      s"host:${proxy.host}," +
+      s"user:${proxy.principal.getOrElse("")}," +
+      s"password:${getProxyPass(proxy)}" +
+      s"]")
+  }
+
+  private def getProxyPass(proxy: WSProxyServer): String = {
+    val pass = proxy.password.getOrElse("")
+    if (pass.length > 2) {
+      pass.substring(0, 2)
+    } else {
+      ""
+    }
+  }
+
+  private def wsProxyServer: Option[WSProxyServer] = WSProxyConfiguration("proxy", config)
+
+  override def wsClient: WSClient = ws
 
   override protected def configuration: Option[Config] = Some(config.underlying)
 }
