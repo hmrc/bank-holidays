@@ -22,7 +22,7 @@ import javax.inject.Inject
 import play.api.libs.ws.{WSClient, WSProxyServer, WSRequest}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.http.hooks.HttpHook
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet}
+import uk.gov.hmrc.http.HttpGet
 import uk.gov.hmrc.play.http.ws.{WSGet, WSProxyConfiguration}
 
 class WSProxyGet @Inject()(
@@ -33,7 +33,7 @@ class WSProxyGet @Inject()(
 
   override val hooks: Seq[HttpHook] = NoneRequired
 
-  override def buildRequest[A](url: String, headers: Seq[(String, String)] = Seq.empty)(implicit hc: HeaderCarrier): WSRequest = {
+  override def buildRequest[A](url: String, headers: Seq[(String, String)] = Seq.empty): WSRequest = {
     wsProxyServer match {
       case Some(proxy) =>
         printProxyConfig(proxy)
@@ -66,5 +66,5 @@ class WSProxyGet @Inject()(
 
   override def wsClient: WSClient = ws
 
-  override protected def configuration: Option[Config] = Some(config.underlying)
+  override protected def configuration: Config = config.underlying
 }

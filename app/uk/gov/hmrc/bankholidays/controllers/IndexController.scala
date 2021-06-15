@@ -22,17 +22,18 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.bankholidays.config.AppConfig
 import uk.gov.hmrc.bankholidays.connector.WSProxyGet
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @Singleton
 class IndexController @Inject()(
                                  client: WSProxyGet,
                                  appConfig: AppConfig,
                                  cc: MessagesControllerComponents
-                               ) extends FrontendController(cc) {
+                               ) extends FrontendController(cc)  {
 
   private lazy val url: String = {
     val url = appConfig.bankHolidaysUrl

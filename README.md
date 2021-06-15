@@ -6,7 +6,7 @@ This is an MDTP proxy to www.gov.uk/bank-holidays.json
 
 ##### Running locally:
 
-`GET http://localhost:8587/bank-holidays`
+`GET http://localhost:9587/bank-holidays`
 
 ##### In MDTP Environments:
 
