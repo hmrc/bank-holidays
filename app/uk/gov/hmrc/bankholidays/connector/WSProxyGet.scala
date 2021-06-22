@@ -20,7 +20,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import javax.inject.Inject
 import play.api.libs.ws.{WSClient, WSProxyServer, WSRequest}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Logging}
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.http.HttpGet
 import uk.gov.hmrc.play.http.ws.{WSGet, WSProxyConfiguration}
@@ -29,7 +29,7 @@ class WSProxyGet @Inject()(
                             val config: Configuration,
                             val ws: WSClient,
                             override val actorSystem: ActorSystem
-                          ) extends HttpGet with WSGet {
+                          ) extends HttpGet with WSGet with Logging {
 
   override val hooks: Seq[HttpHook] = NoneRequired
 
@@ -44,7 +44,7 @@ class WSProxyGet @Inject()(
   }
 
   def printProxyConfig(proxy: WSProxyServer): Unit = {
-    Logger.info(s"Using Proxy [" +
+    logger.info(s"Using Proxy [" +
       s"protocol:${proxy.protocol.getOrElse("")}," +
       s"port:${proxy.port}," +
       s"host:${proxy.host}," +

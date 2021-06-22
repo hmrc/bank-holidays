@@ -16,8 +16,18 @@
 
 @import uk.gov.hmrc.bankholidays.config.AppConfig
 @import play.twirl.api.HtmlFormat
+@import layouts.{govuk_template => hmrcGovUkTemplate}
+@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
+@import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
 
-@this()
+@this(
+headUi:uiLayouts.Head,
+headerNavUi:uiLayouts.HeaderNav,
+footerUi:uiLayouts.Footer,
+serviceInfoUi:uiLayouts.ServiceInfo,
+mainContentUi:uiLayouts.MainContent,
+mainContentHeaderUi:uiLayouts.MainContentHeader,
+footerLinksUi:uiLayouts.FooterLinks)
 
 @(appConfig: AppConfig,
   title: String,
@@ -30,12 +40,8 @@
   serviceInfoContent: Html = HtmlFormat.empty,
   scriptElem: Option[Html] = None)(implicit request: Request[_], messages: Messages)
 
-@import layouts.{govuk_template => hmrcGovUkTemplate}
-@import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
-@import uk.gov.hmrc.play.views.html.{helpers => uiHelpers}
-
 @head = {
-    @uiLayouts.head(
+    @headUi(
       linkElem = None,
       headScripts = None)
     <meta name="format-detection" content="telephone=no" />
@@ -44,7 +50,7 @@
 @headerNavLinks = {}
 
 @insideHeader = {
-    @uiLayouts.header_nav(
+    @headerNavUi(
       navTitle = Some("bank-holidays"),
       navTitleLink = None,
       showBetaLink = false,
@@ -54,7 +60,7 @@
 @afterHeader = {}
 
 @bodyEnd = {
-    @uiLayouts.footer(
+    @footerUi(
       analyticsToken = Some(appConfig.analyticsToken),
       analyticsHost = appConfig.analyticsHost,
       ssoUrl = None,
@@ -65,7 +71,7 @@
 @footerTop = {}
 
 @serviceInfo = {
-    @uiLayouts.serviceInfo(
+    @serviceInfoUi(
       betaBanner = HtmlFormat.empty,
       includeGridWrapper = false,
       serviceInfoContent = Some(serviceInfoContent))
@@ -73,14 +79,14 @@
 
 @mainContentHeader = {
     @if(contentHeader.isDefined) {
-        @uiLayouts.main_content_header(contentHeader = contentHeader.get)
+        @mainContentHeaderUi(contentHeader = contentHeader.get)
     }
 }
 
 @getHelpForm = {}
 
 @content = {
-    @uiLayouts.main_content(
+    @mainContentUi(
       article = mainContent,
       mainClass = mainClass,
       mainDataAttributes = mainDataAttributes,
@@ -90,4 +96,4 @@
       sidebar = sidebar)
 }
 
-@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(uiLayouts.footer_links()), nav = true)(content)
+@hmrcGovUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footerLinksUi()), nav = true)(content)
