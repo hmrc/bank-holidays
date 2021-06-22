@@ -18,6 +18,7 @@ package uk.gov.hmrc.bankholidays.controllers
 
 import akka.stream.Materializer
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.BDDMockito.given
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
@@ -26,12 +27,16 @@ import play.api.http.Status
 import play.api.mvc.{MessagesControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import play.api.test.Helpers.{status => helperStatus}
 import uk.gov.hmrc.bankholidays.config.{AppConfig, ProxyConfiguration}
 import uk.gov.hmrc.bankholidays.connector.WSProxyGet
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import org.scalatest.{Matchers, OptionValues, WordSpecLike}
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+
+import scala.concurrent.Future
 
 
-class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with WithFakeApplication
+class IndexControllerControllerSpec extends WordSpecLike with Matchers with OptionValues with MockitoSugar with GuiceOneServerPerSuite
   with BeforeAndAfterEach with BeforeAndAfterAll {
 
   private val wirePort = 20001
@@ -40,10 +45,10 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
   private val wireMockServer = new WireMockServer(wirePort)
 
   private val fakeRequest = FakeRequest("GET", "/")
-  private val wsClient: WSProxyGet = fakeApplication.injector.instanceOf[WSProxyGet]
+  private val wsClient: WSProxyGet = app.injector.instanceOf[WSProxyGet]
   private val appConfig = mock[AppConfig]
-  private implicit val mat: Materializer = fakeApplication.injector.instanceOf[Materializer]
-  private val cc: MessagesControllerComponents = fakeApplication.injector.instanceOf[MessagesControllerComponents]
+  private implicit val mat: Materializer = app.injector.instanceOf[Materializer]
+  private val cc: MessagesControllerComponents = app.injector.instanceOf[MessagesControllerComponents]
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -83,10 +88,10 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
           )
       )
 
-      val result: Result = await(controller.get(fakeRequest))
-      status(result) shouldBe Status.OK
+      val result: Future[Result] = controller.get(fakeRequest)
+      helperStatus(result) shouldBe Status.OK
       contentType(result) shouldBe Some("application/json")
-      bodyOf(result) shouldBe "{}"
+      contentAsString(result) shouldBe "{}"
     }
 
     "return 200 with non-json without proxy" in {
@@ -102,10 +107,10 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
           )
       )
 
-      val result: Result = await(controller.get(fakeRequest))
-      status(result) shouldBe Status.OK
+      val result: Future[Result] = controller.get(fakeRequest)
+      helperStatus(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
-      bodyOf(result) shouldBe "xyz"
+      contentAsString(result) shouldBe "xyz"
     }
 
     "return 200 with proxy" in {
@@ -121,10 +126,10 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
           )
       )
 
-      val result: Result = await(controller.get(fakeRequest))
-      status(result) shouldBe Status.OK
+      val result: Future[Result] = controller.get(fakeRequest)
+      helperStatus(result) shouldBe Status.OK
       contentType(result) shouldBe Some("application/json")
-      bodyOf(result) shouldBe "[]"
+      contentAsString(result) shouldBe "[]"
     }
 
     "return 200 with non-json with proxy" in {
@@ -140,10 +145,10 @@ class IndexControllerControllerSpec extends UnitSpec with MockitoSugar with With
           )
       )
 
-      val result: Result = await(controller.get(fakeRequest))
-      status(result) shouldBe Status.OK
+      val result: Future[Result] = controller.get(fakeRequest)
+      helperStatus(result) shouldBe Status.OK
       contentType(result) shouldBe Some("text/html")
-      bodyOf(result) shouldBe "abc"
+      contentAsString(result) shouldBe "abc"
     }
 
   }

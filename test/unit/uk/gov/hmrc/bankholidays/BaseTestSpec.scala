@@ -22,9 +22,9 @@ import play.api.i18n.{Messages, MessagesApi}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.bankholidays.config.AppConfig
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.{WordSpecLike,Matchers,OptionValues}
 
-class BaseTestSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite {
+class BaseTestSpec extends WordSpecLike with Matchers with OptionValues with MockitoSugar with GuiceOneAppPerSuite {
 
   implicit val fakeRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
   val messagesApi: MessagesApi = app.injector.instanceOf[MessagesApi]

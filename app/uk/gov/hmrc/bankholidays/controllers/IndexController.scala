@@ -17,7 +17,7 @@
 package uk.gov.hmrc.bankholidays.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.bankholidays.config.AppConfig
@@ -33,11 +33,11 @@ class IndexController @Inject()(
                                  client: WSProxyGet,
                                  appConfig: AppConfig,
                                  cc: MessagesControllerComponents
-                               ) extends FrontendController(cc)  {
+                               ) extends FrontendController(cc)  with Logging {
 
   private lazy val url: String = {
     val url = appConfig.bankHolidaysUrl
-    Logger.info(s"Proxying $url")
+    logger.info(s"Proxying $url")
     url
   }
 
