@@ -25,21 +25,6 @@ class AppConfigSpec extends BaseTestSpec {
     new AppConfig(Configuration.from(pairs.map(e => e._1 -> e._2).toMap))
   }
 
-  "Build assets prefix" in {
-    appConfig(
-      "assets.url" -> "http://localhost:9032/assets/",
-      "assets.version" -> "4.5.0"
-    ).assetsPrefix shouldBe "http://localhost:9032/assets/4.5.0"
-  }
-
-  "Build analytics token" in {
-    appConfig("google-analytics.token" -> "N/A").analyticsToken shouldBe "N/A"
-  }
-
-  "Build analytics host" in {
-    appConfig("google-analytics.host" -> "auto").analyticsHost shouldBe "auto"
-  }
-
   "Build bank holidays url" in {
     appConfig("bank-holidays-url" -> "x").bankHolidaysUrl shouldBe "x"
   }

@@ -16,19 +16,15 @@
 
 package uk.gov.hmrc.bankholidays.config
 
-import java.util.Base64
-
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
+
+import java.util.Base64
+import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AppConfig @Inject()(
                            val runModeConfiguration: Configuration
                          ) {
-
-  lazy val assetsPrefix: String = getString(s"assets.url") + getString(s"assets.version")
-  lazy val analyticsToken: String = getString(s"google-analytics.token")
-  lazy val analyticsHost: String = getString(s"google-analytics.host")
   lazy val bankHolidaysUrl: String = getString("bank-holidays-url")
   lazy val proxy: Option[ProxyConfiguration] = if (getBoolean("proxy.proxyRequiredForThisEnvironment")) {
     Some(ProxyConfiguration(
